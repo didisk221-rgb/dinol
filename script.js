@@ -63,6 +63,14 @@ function setStatus(message) {
   }
 }
 
+function saveLastEpisode(index) {
+  try {
+    localStorage.setItem("lastEpisode", String(index));
+  } catch (error) {
+    console.warn("Episode position could not be saved.", error);
+  }
+}
+
 async function loadVideos() {
   try {
     const response = await fetch("videos.json", { cache: "no-store" });
@@ -113,10 +121,22 @@ function playVideo(index) {
   selector.value = String(currentIndex);
 
   player.load();
-  player.play().catch(() => {});
-  player.oncanplay = () => hideLoader();
+  player.play().catch((error) => {
+    hideLoader();
+    if (error.name !== "NotAllowedError") {
+      setStatus("Відео не вдалося запустити. Перевірте посилання на відео.");
+    }
+  });
+  player.oncanplay = () => {
+    hideLoader();
+    setStatus("");
+  };
+  player.onerror = () => {
+    hideLoader();
+    setStatus("Це відео недоступне. Спробуйте наступну серію.");
+  };
 
-  localStorage.setItem("lastEpisode", String(currentIndex));
+  saveLastEpisode(currentIndex);
 }
 
 function fillSelector() {
@@ -222,7 +242,12 @@ async function init() {
   bindButtons();
   attachAutoAdvance();
 
-  const saved = Number(localStorage.getItem("lastEpisode"));
+  let saved = -1;
+  try {
+    saved = Number(localStorage.getItem("lastEpisode"));
+  } catch (error) {
+    console.warn("Saved episode could not be read.", error);
+  }
   if (Number.isInteger(saved) && saved >= 0 && saved < videos.length) {
     playVideo(saved);
   } else {

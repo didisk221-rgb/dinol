@@ -6,8 +6,13 @@ const VIDEO_BASE_URL = "https://pub-3d26663746cd47e89dc0e8d2cff7aa33.r2.dev/";
 
 function buildFallbackVideos() {
   const fallbackVideos = [];
+  const missingEpisodes = new Set([28, 29, 32, 33, 34, 35, 66]);
 
   for (let index = 1; index <= 198; index += 1) {
+    if (missingEpisodes.has(index)) {
+      continue;
+    }
+
     const padded = String(index).padStart(3, "0");
     fallbackVideos.push({
       url: `${VIDEO_BASE_URL}video-${padded}.mp4`
@@ -94,6 +99,16 @@ async function loadVideos() {
   }
 }
 
+function readSavedEpisode() {
+  try {
+    const saved = Number(localStorage.getItem("lastEpisode"));
+    return Number.isInteger(saved) && saved >= 0 && saved < videos.length ? saved : 0;
+  } catch (error) {
+    console.warn("Saved episode could not be read.", error);
+    return 0;
+  }
+}
+
 function playVideo(index) {
   if (!videos.length) {
     return;
@@ -154,9 +169,9 @@ function fillSelector() {
     selector.appendChild(option);
   });
 
-  selector.addEventListener("change", () => {
+  selector.onchange = () => {
     playVideo(parseInt(selector.value, 10));
-  });
+  };
 }
 
 function bindButtons() {
@@ -229,30 +244,17 @@ function attachAutoAdvance() {
   });
 }
 
-async function init() {
-  await loadVideos();
-
-  if (!videos.length) {
-    console.warn("No videos available to play.");
-    setStatus("Не вдалося завантажити серії для відтворення.");
-    return;
-  }
-
+function init() {
+  videos = buildFallbackVideos();
   fillSelector();
   bindButtons();
   attachAutoAdvance();
+  playVideo(readSavedEpisode());
 
-  let saved = -1;
-  try {
-    saved = Number(localStorage.getItem("lastEpisode"));
-  } catch (error) {
-    console.warn("Saved episode could not be read.", error);
-  }
-  if (Number.isInteger(saved) && saved >= 0 && saved < videos.length) {
-    playVideo(saved);
-  } else {
-    playVideo(Math.floor(Math.random() * videos.length));
-  }
+  loadVideos().then(() => {
+    fillSelector();
+    playVideo(Math.min(currentIndex, videos.length - 1));
+  });
 }
 
 window.addEventListener("DOMContentLoaded", init);

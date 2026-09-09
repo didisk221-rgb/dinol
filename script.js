@@ -134,8 +134,18 @@ function playVideo(index, shouldPlay = true) {
     return;
   }
 
-  player.src = currentVideo.url;
   selector.value = String(currentIndex);
+
+  if (window.location.protocol === "file:") {
+    hideLoader();
+    setStatus("Для локального файлу відео відкривається в новій вкладці.");
+    if (shouldPlay) {
+      window.open(currentVideo.url, "_blank", "noopener,noreferrer");
+    }
+    return;
+  }
+
+  player.src = currentVideo.url;
 
   player.load();
   player.oncanplay = () => {

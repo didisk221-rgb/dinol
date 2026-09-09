@@ -37,6 +37,7 @@ loader.style.cssText = `
   justify-content: center;
   z-index: 9999;
   opacity: 0;
+  pointer-events: none;
   transition: opacity .3s;
 `;
 document.body.appendChild(loader);
@@ -47,6 +48,7 @@ function showLoader() {
 
 function hideLoader() {
   loader.style.opacity = 0;
+  loader.style.pointerEvents = "none";
 }
 
 function clearCountdown() {
@@ -109,7 +111,7 @@ function readSavedEpisode() {
   }
 }
 
-function playVideo(index) {
+function playVideo(index, shouldPlay = true) {
   if (!videos.length) {
     return;
   }
@@ -136,20 +138,23 @@ function playVideo(index) {
   selector.value = String(currentIndex);
 
   player.load();
-  player.play().catch((error) => {
-    hideLoader();
-    if (error.name !== "NotAllowedError") {
-      setStatus("Відео не вдалося запустити. Перевірте посилання на відео.");
-    }
-  });
   player.oncanplay = () => {
     hideLoader();
     setStatus("");
   };
   player.onerror = () => {
     hideLoader();
-    setStatus("Це відео недоступне. Спробуйте наступну серію.");
+    setStatus("Відео не завантажилось. Відкрийте сайт через його https-посилання.");
   };
+
+  if (shouldPlay) {
+    player.play().catch((error) => {
+      hideLoader();
+      if (error.name !== "NotAllowedError") {
+        setStatus("Натисніть кнопку відтворення у відеоплеєрі.");
+      }
+    });
+  }
 
   saveLastEpisode(currentIndex);
 }
@@ -249,7 +254,7 @@ function init() {
   fillSelector();
   bindButtons();
   attachAutoAdvance();
-  playVideo(readSavedEpisode());
+  playVideo(readSavedEpisode(), false);
 
   loadVideos().then(() => {
     fillSelector();

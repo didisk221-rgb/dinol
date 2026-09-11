@@ -147,10 +147,9 @@ function playVideo(index, shouldPlay = true) {
 
   player.src = currentVideo.url;
 
-  player.load();
   const speedSelector = document.getElementById("speed");
   player.playbackRate = speedSelector ? Number(speedSelector.value) : 1;
-  player.oncanplay = () => {
+  player.onloadeddata = () => {
     hideLoader();
     setStatus("");
   };
@@ -291,15 +290,12 @@ function attachAutoAdvance() {
 }
 
 function init() {
-  videos = buildFallbackVideos();
-  fillSelector();
   bindButtons();
   attachAutoAdvance();
-  playVideo(readSavedEpisode(), false);
 
   loadVideos().then(() => {
     fillSelector();
-    playVideo(Math.min(currentIndex, videos.length - 1));
+    playVideo(readSavedEpisode(), false);
   });
 }
 

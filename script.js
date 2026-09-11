@@ -148,6 +148,8 @@ function playVideo(index, shouldPlay = true) {
   player.src = currentVideo.url;
 
   player.load();
+  const speedSelector = document.getElementById("speed");
+  player.playbackRate = speedSelector ? Number(speedSelector.value) : 1;
   player.oncanplay = () => {
     hideLoader();
     setStatus("");
@@ -193,6 +195,10 @@ function bindButtons() {
   const randomButton = document.getElementById("random");
   const nextButton = document.getElementById("next");
   const prevButton = document.getElementById("prev");
+  const backwardButton = document.getElementById("backward");
+  const forwardButton = document.getElementById("forward");
+  const speedSelector = document.getElementById("speed");
+  const player = document.getElementById("player");
 
   if (randomButton) {
     randomButton.addEventListener("click", () => {
@@ -215,10 +221,30 @@ function bindButtons() {
       playVideo(currentIndex - 1);
     });
   }
+
+  if (backwardButton && player) {
+    backwardButton.addEventListener("click", () => {
+      player.currentTime = Math.max(0, player.currentTime - 10);
+    });
+  }
+
+  if (forwardButton && player) {
+    forwardButton.addEventListener("click", () => {
+      const duration = Number.isFinite(player.duration) ? player.duration : player.currentTime + 10;
+      player.currentTime = Math.min(duration, player.currentTime + 10);
+    });
+  }
+
+  if (speedSelector && player) {
+    speedSelector.addEventListener("change", () => {
+      player.playbackRate = Number(speedSelector.value);
+    });
+  }
 }
 
 function attachAutoAdvance() {
   const player = document.getElementById("player");
+  const randomAutoplay = document.getElementById("randomAutoplay");
   if (!player) {
     return;
   }
@@ -253,7 +279,12 @@ function attachAutoAdvance() {
         clearInterval(nextEpisodeTimer);
         nextEpisodeTimer = null;
         countdown.remove();
-        playVideo(currentIndex + 1);
+        if (randomAutoplay && randomAutoplay.checked) {
+          const randomIndex = Math.floor(Math.random() * videos.length);
+          playVideo(randomIndex);
+        } else {
+          playVideo(currentIndex + 1);
+        }
       }
     }, 1000);
   });

@@ -14,14 +14,14 @@
     h1 {
       font-size: 42px;
       margin-bottom: 20px;
-      color: #ff66cc;
-      text-shadow: 0 0 10px #ff33aa;
+      color: #00fec7;
+      text-shadow: 0 0 10px #33ebff;
     }
     #player {
       width: 80%;
       max-width: 900px;
       border-radius: 12px;
-      box-shadow: 0 0 25px rgba(255, 0, 150, 0.5);
+      box-shadow: 0 0 25px rgba(0, 255, 183, 0.492);
       margin-bottom: 25px;
     }
     .controls {
@@ -32,20 +32,20 @@
       font-size: 18px;
       border: none;
       border-radius: 10px;
-      background: #ff00aa;
+      background: #00ffbb;
       color: #fff;
       cursor: pointer;
       margin: 5px;
       transition: 0.3s;
     }
     button:hover, select:hover {
-      background: #ff33cc;
+      background: #33ffc9;
       transform: scale(1.05);
     }
     select {
       background: #222;
       color: #fff;
-      border: 2px solid #ff00aa;
+      border: 2px solid #00ff95;
     }
   </style>
 </head>
@@ -62,6 +62,21 @@
     <button id="next">Наступна серія ⟶</button>
     <button id="random">Випадкова серія</button>
     <select id="selector"></select>
+    <button id="backward" type="button">-10 сек</button>
+    <button id="forward" type="button">+10 сек</button>
+    <label for="speed">Швидкість:</label>
+    <select id="speed">
+      <option value="0.5">0.5x</option>
+      <option value="0.75">0.75x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
+    <label>
+      <input id="randomAutoplay" type="checkbox">
+      Автовідтворення випадкових серій
+    </label>
   </div>
 
   <script src="script.js"></script>

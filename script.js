@@ -1,8 +1,10 @@
 let videos = [];
 let currentIndex = 0;
 let nextEpisodeTimer = null;
+let nextVideoPreload = null;
 
 const VIDEO_BASE_URL = "https://pub-3d26663746cd47e89dc0e8d2cff7aa33.r2.dev/";
+const NEXT_EPISODE_DELAY_SECONDS = 1;
 
 function buildFallbackVideos() {
   const fallbackVideos = [];
@@ -111,6 +113,33 @@ function readSavedEpisode() {
   }
 }
 
+function preloadVideo(url) {
+  if (!url) {
+    return null;
+  }
+
+  const hiddenVideo = document.createElement("video");
+  hiddenVideo.preload = "auto";
+  hiddenVideo.src = url;
+  hiddenVideo.muted = true;
+  hiddenVideo.playsInline = true;
+  hiddenVideo.load();
+  return hiddenVideo;
+}
+
+function preloadNextEpisode() {
+  if (!videos.length) {
+    return;
+  }
+
+  const nextIndex = (currentIndex + 1) % videos.length;
+  const nextVideo = videos[nextIndex];
+
+  if (nextVideo && nextVideo.url) {
+    nextVideoPreload = preloadVideo(nextVideo.url);
+  }
+}
+
 function playVideo(index, shouldPlay = true) {
   if (!videos.length) {
     return;
@@ -146,6 +175,7 @@ function playVideo(index, shouldPlay = true) {
   }
 
   player.src = currentVideo.url;
+  player.load();
 
   const speedSelector = document.getElementById("speed");
   player.playbackRate = speedSelector ? Number(speedSelector.value) : 1;
@@ -157,6 +187,8 @@ function playVideo(index, shouldPlay = true) {
     hideLoader();
     setStatus("Відео не завантажилось. Відкрийте сайт через його https-посилання.");
   };
+
+  preloadNextEpisode();
 
   if (shouldPlay) {
     player.play().catch((error) => {
@@ -253,7 +285,7 @@ function attachAutoAdvance() {
       return;
     }
 
-    let seconds = 5;
+    let seconds = NEXT_EPISODE_DELAY_SECONDS;
     const countdown = document.createElement("div");
     countdown.id = "countdown";
     countdown.style.cssText = `
